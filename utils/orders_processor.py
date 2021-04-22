@@ -36,6 +36,7 @@ while True:
                     print(f'''
                     amount : {fit_order.remaining_amount()}
                     price : {order.price}
+                    base_currency : {order.base_currency.symbol}
                     seller order : {order if order.Type=='sell' else fit_order}
                     buyer order : {order if order.Type=='buy' else fit_order}
                     ''')
@@ -58,6 +59,7 @@ while True:
                     print(f'''
                     amount : {fit_order.remaining_amount()}
                     price : {order.price}
+                    base_currency : {order.base_currency.symbol}
                     seller order : {order if order.Type=='sell' else fit_order}
                     buyer order : {order if order.Type=='buy' else fit_order}
                     ''')

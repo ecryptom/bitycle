@@ -10,8 +10,9 @@ class Base_currency(models.Model):
     name = models.CharField(max_length=30)
     symbol = models.CharField(max_length=10)
     persian_name = models.CharField(max_length=25)
+    price = models.FloatField(default=1)
     logo = models.ImageField(upload_to='logos', null=True)
-    currency = models.ForeignKey(Currency, null=True, blank=True, on_delete=models.SET_NULL)
+    reference = models.ForeignKey(Currency, null=True, blank=True, on_delete=models.SET_NULL)
 
 
 class One_min_candle(models.Model):
@@ -52,7 +53,7 @@ class Order(models.Model):
     Type = models.CharField(max_length=4, choices=(('sell','sell'), ('buy','buy')))
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    base_currency = models.CharField(max_length=10, choices=(('TOMAN', 'TOMAN'), ('USDT', 'USDT')))
+    base_currency = models.ForeignKey(Base_currency, on_delete=models.CASCADE)
     price = models.FloatField()
     total_amount = models.FloatField()
     traded_amount = models.FloatField(default=0)
@@ -69,7 +70,7 @@ class Transaction(models.Model):
     buyer = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='buys')
     seller = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='sales')
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    base_currency = models.CharField(max_length=10, choices=(('TOMAN', 'TOMAN'), ('USDT', 'USDT')))
+    base_currency = models.ForeignKey(Base_currency, on_delete=models.CASCADE)
     price = models.FloatField()
     amount = models.FloatField()
     date = models.DateTimeField(auto_now=True)
