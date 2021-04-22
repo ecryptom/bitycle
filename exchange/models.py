@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Currency(models.Model):
     name = models.CharField(max_length=30)
     symbol = models.CharField(max_length=10)
@@ -78,3 +79,5 @@ class Transaction(models.Model):
 
 class Orders_queue(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE)
+
+

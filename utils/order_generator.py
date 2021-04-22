@@ -19,7 +19,6 @@ def update_orders(base_currency, currency, price, Type, average_volume, number_o
 
     # change base_currency from USDT to our desired base_currency
     price = price / base_currency.price
-    average_volume = average_volume / base_currency.price
 
     #calcute the range of orders
     if Type == 'sell':
