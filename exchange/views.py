@@ -2,6 +2,12 @@ from django.shortcuts import render
 import mysql.connector, os
 from rest_framework.views import APIView
 
+################ contact   #######################
+def index(req):
+  return render(req, 'index.html')
+
+def contact(req):
+  return render(req, 'contact.html')
 
 
 #connect to database

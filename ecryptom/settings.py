@@ -134,7 +134,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'crypto/statics')
+    os.path.join(BASE_DIR, 'ecryptom/statics')
 ]
 
 MEDIA_URL = '/media/'
@@ -143,5 +143,5 @@ if os.getenv('on_host') == 'True':
     STATIC_ROOT = os.getenv('STATIC_ROOT')
     MEDIA_ROOT = os.getenv('MEDIA_ROOT')
 else:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'crypto/static')
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'crypto/media')
+    STATIC_ROOT = os.path.join(BASE_DIR, 'ecryptom/static')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'ecryptom/media')
