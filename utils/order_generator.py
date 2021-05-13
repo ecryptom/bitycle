@@ -1,24 +1,18 @@
-from exchange.models import Five_min_candle, Currency, Order, Orders_queue, Base_currency
+from exchange.models import One_min_candle, Currency, Order, Orders_queue, Market
 from accounts.models import User
 from django.utils import timezone
 import random
+from django.db.models import Q
+import mysql.connector
 
 ecryptom_user = User.objects.get(username='ecryptom')
 dollar = 25000
 
-# price => price of currency (price of base_currency is available in its instance)
-# average_volume => the average volume of all trades in last candel (candel.volume / candel.number_of_trades)
-# number_of_orders => number of orders you want to be on trades table (by ecryptom_user)
+deactive_orders_sql = 'INSERT INTO exchange_order (id, Type, user_id, market_id, price, total_amount, traded_amount,date, expire_date, active) VALUES '
+add_orders_sql = 'insert into exchange_order (Type, user_id, market_id, price, total_amount, traded_amount,date, expire_date, active) values '
 
-def update_orders(base_currency, currency, price, Type, average_volume, number_of_orders):
-    global Five_min_candle, Currency, Order, timezone, ecryptom_user, random, dollar, Orders_queue, Base_currency
-
-    # do not create any order if currency is as same as order base_currency
-    if currency == base_currency.reference:
-        return 0
-
-    # change base_currency from USDT to our desired base_currency
-    price = price / base_currency.price
+def update_orders(market, price, Type, average_volume, number_of_orders):
+    global Currency, Order, timezone, ecryptom_user, random, dollar, Orders_queue, deactive_orders_sql, add_orders_sql
 
     #calcute the range of orders
     if Type == 'sell':
@@ -29,23 +23,32 @@ def update_orders(base_currency, currency, price, Type, average_volume, number_o
         sign = -1
 
     # get all active related orders
-    orders = Order.objects.filter(user=ecryptom_user).filter(currency=currency).filter(base_currency=base_currency).filter(active=True).filter(Type=Type)
+    orders = Order.objects.filter(user=ecryptom_user).filter(market=market).filter(active=True).filter(Type=Type)
     
     # deactivate orders that are out of range
     expired_orders = list(orders.filter(price__gt=orders_range[1]))
     expired_orders.extend(list(orders.filter(price__lt=orders_range[0])))
     for order in expired_orders:
-        order.active = False
-        order.expire_date = timezone.now()
-        order.save()
-        print(f'''
-            '-expire-'
-            type : {Type}
-            currency : {currency.symbol}
-            price : {order.price}
-            base_currency : {base_currency.symbol}
-            total_ammount: {order.total_amount}
-            ''')
+        # add update command to deactive_orders_sql
+        deactive_orders_sql += f'''
+            ({order.id}, 
+            \'{order.Type}\',
+            {order.user.id},
+            {order.market.id},
+            {order.price},
+            {order.total_amount},
+            {order.traded_amount},
+            \'{order.date.strftime("%Y-%m-%d %H:%M:%S")}\',
+            \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
+            {0}),'''
+
+        #print(f'''
+        #    '-expire-'
+        #    type : {Type}
+        #    market : {market.name}
+        #    price : {order.price}
+        #    total_ammount: {order.total_amount}
+        #    ''')
     
     # calcute the number of new orders that must generate
     count = number_of_orders - orders.count() + len(expired_orders)
@@ -55,50 +58,136 @@ def update_orders(base_currency, currency, price, Type, average_volume, number_o
         active_orders = list(orders.filter(price__gt=orders_range[0]).filter(price__lt=orders_range[1]))
         for i in range(-count):
             order = active_orders.pop()
-            order.active = False
-            order.expire_date = timezone.now()
-            order.save()
-            print(f'''
-            '--'
-            type : {Type}
-            currency : {currency.symbol}
-            base_currency : {base_currency.symbol}
-            price : {order.price}
-            total_ammount: {order.total_amount}
-            ''')
+            # add update command to deactive_orders_sql
+            deactive_orders_sql += f'''
+                ({order.id}, 
+                \'{order.Type}\',
+                {order.user.id},
+                {order.market.id},
+                {order.price},
+                {order.total_amount},
+                {order.traded_amount},
+                \'{order.date.strftime("%Y-%m-%d %H:%M:%S")}\',
+                \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
+                {0}),'''
+
+            #print(f'''
+            #'--'
+            #type : {Type}
+            #market : {market.name}
+            #price : {order.price}
+            #total_ammount: {order.total_amount}
+            #''')
+            
     #if count > 0 then generate new orders
     if count > 0:
         for i in range(count):
             o = Order(
-                currency=currency,
+                market=market,
                 Type=Type,
                 user=ecryptom_user,
-                base_currency=base_currency,
                 price= price * (1 + sign * random.random() * 0.05),
                 total_amount=average_volume * (1 - random.random() * 0.9),
                 expire_date= timezone.now() + timezone.timedelta(days=30)
             )
-            o.save()
-            Orders_queue(order=o).save()
-            print(f'''
-            '++'
-            type : {Type}
-            currency : {currency.symbol}
-            price : {o.price}
-            base_currency : {base_currency.symbol}
-            total_ammount: {o.total_amount}
-            ''')
+            # (Type, user_id, market_id, price, total_amount, traded_amount,date, expire_date, active)
+            add_orders_sql += f'''
+                (\'{Type}\',
+                {ecryptom_user.id},
+                {market.id},
+                {price * (1 + sign * random.random() * 0.05)},
+                {average_volume * (1 - random.random() * 0.9)},
+                {0},
+                \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
+                \'{(timezone.now()+timezone.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")}\',
+                {1}
+            ),'''
+            #o.save()
+            #Orders_queue(order=o).save()
+            #print(f'''
+            #'++'
+            #type : {Type}
+            #market : {market.name}
+            #price : {o.price}
+            #total_ammount: {o.total_amount}
+            #''')
 
-for base_currency in Base_currency.objects.all():
-    for currency in Currency.objects.all():
-        candle = Five_min_candle.objects.filter(currency=currency).last()
-        print(f'start : {currency.symbol} _ {base_currency.symbol}')
-        if base_currency.reference != currency:
-            try:
-                update_orders(base_currency, currency, candle.close_price, 'buy', candle.volume/candle.number_of_trades, 2)
-                update_orders(base_currency, currency, candle.close_price, 'sell', candle.volume/candle.number_of_trades, 2)
-            except:
-                print(currency.symbol, base_currency.symbol)
-                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
-print('fi')
+
+toman = Currency.objects.get(symbol='TOMAN')
+
+for market in Market.objects.filter(~Q(quote_currency=toman)):
+    candle = One_min_candle.objects.filter(market=market).last()
+    #print(f'start : {market.name}')
+    try:
+        # calcute the average volume (suppose the average is 1000 USDT)
+        if market.quote_currency.symbol == 'USDT':
+            average_volume = 1000 / candle.close_price 
+        else:
+            related_usdt_market = Market.objects.get(name=f'{candle.market.base_currency.symbol}USDT')
+            price_in_USDT = One_min_candle.objects.filter(market=related_usdt_market).last().close_price
+            average_volume = 1000 / price_in_USDT 
+
+        update_orders(market, candle.close_price, 'buy', average_volume, 2)
+        update_orders(market, candle.close_price, 'sell', average_volume, 2)
+
+    except Exception as e:
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print(market.name, e)
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
+
+
+##################  save changes in db     ################
+mydb = mysql.connector.connect(
+      host=os.getenv('DATABASE_HOST'),
+      port=os.getenv('DATABASE_PORT'),
+      user=os.getenv('DATABASE_USER_NAME'),
+      password=os.getenv('DATABASE_USER_PASSWORD'),
+      database=os.getenv('DATABASE_NAME'),
+    )
+mycursor = mydb.cursor()
+
+#  complete and execute the deactivation sql command
+deactive_orders_sql = deactive_orders_sql[:-1] + ''' ON DUPLICATE KEY UPDATE 
+    Type = VALUES(Type),
+    user_id = VALUES(user_id),
+    market_id = VALUES(market_id),
+    price = VALUES(price),
+    total_amount = VALUES(total_amount),
+    traded_amount = VALUES(traded_amount),
+    date = VALUES(date),
+    expire_date=VALUES(expire_date),
+    active = VALUES(active);
+    '''
+try:
+    mycursor.execute(deactive_orders_sql)
+    mydb.commit()
+except Exception as e:
+    print(e)
+
+
+# save last order id to identify new orders after that
+last_order = Order.objects.filter(user=ecryptom_user).last()
+
+# excomplete and execute the add order sql command
+add_orders_sql = add_orders_sql[:-1] + ';'
+try:
+    mycursor.execute(add_orders_sql)
+    mydb.commit()
+except Exception as e:
+    print(e)
+
+
+try:
+    # add new orders to order_queue
+    new_orders = Order.objects.filter(id__gt=last_order.id).filter(user=ecryptom_user)
+    values = [f'({order.id})' for order in new_orders]
+    values.pop()
+    orders_queue_sql = f'insert into exchange_orders_queue (order_id) values {",".join(values)};'
+    mycursor.execute(orders_queue_sql)
+    mydb.commit()
+    # save last order with django orm to signal order_processor
+    Orders_queue(order=new_orders.last()).save()
+except Exception as e:
+    print(e)
