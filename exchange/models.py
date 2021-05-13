@@ -5,62 +5,49 @@ class Currency(models.Model):
     name = models.CharField(max_length=30)
     symbol = models.CharField(max_length=10)
     persian_name = models.CharField(max_length=25)
-    logo = models.ImageField(upload_to='logos', null=True)
+    logo = models.URLField(null=True)
 
-class Base_currency(models.Model):
-    name = models.CharField(max_length=30)
-    symbol = models.CharField(max_length=10)
-    persian_name = models.CharField(max_length=25)
-    price = models.FloatField(default=1)
-    logo = models.ImageField(upload_to='logos', null=True)
-    reference = models.ForeignKey(Currency, null=True, blank=True, on_delete=models.SET_NULL)
+class Market(models.Model):
+    name = models.CharField(max_length=15)
+    base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='market_as_base')
+    quote_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='market_as_quote')
 
 
 class One_min_candle(models.Model):
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='One_min_candles')
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
     open_time = models.IntegerField()
-    close_time = models.IntegerField()
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
-    volume = models.FloatField()
-    number_of_trades = models.IntegerField()
 
 class Five_min_candle(models.Model):
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='Five_min_candles')
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
     open_time = models.IntegerField()
-    close_time = models.IntegerField()
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
-    volume = models.FloatField()
-    number_of_trades = models.IntegerField()
 
 class One_day_candle(models.Model):
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='One_day_candles')
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
     open_time = models.IntegerField()
-    close_time = models.IntegerField()
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
-    volume = models.FloatField()
-    number_of_trades = models.IntegerField()
 
 
 class Order(models.Model):
     Type = models.CharField(max_length=4, choices=(('sell','sell'), ('buy','buy')))
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    base_currency = models.ForeignKey(Base_currency, on_delete=models.CASCADE)
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
     price = models.FloatField()
     total_amount = models.FloatField()
     traded_amount = models.FloatField(default=0)
     date = models.DateTimeField(auto_now=True)
     expire_date = models.DateTimeField()
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=True, db_index=True)
     def remaining_amount(self):
         return self.total_amount - self.traded_amount
     
@@ -70,8 +57,7 @@ class Transaction(models.Model):
     buyer_order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='buy_transactions')
     buyer = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='buys')
     seller = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='sales')
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    base_currency = models.ForeignKey(Base_currency, on_delete=models.CASCADE)
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
     price = models.FloatField()
     amount = models.FloatField()
     date = models.DateTimeField(auto_now=True)
