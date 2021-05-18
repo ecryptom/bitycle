@@ -16,3 +16,11 @@ class User(AbstractUser):
     last_name = None
     name = models.CharField(max_length=30 ,default='')
     shamsi_joined_date = models.CharField(max_length=11, null=True)
+
+
+
+class contact(models.Model):
+    name = models.CharField(max_length=100, null=True)
+    email = models.CharField(max_length=50, null=True)
+    phone = models.CharField(max_length=20, null=True)
+    description = models.TextField()

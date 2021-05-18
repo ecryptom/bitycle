@@ -19,7 +19,7 @@ from exchange.views import index, contact
 
 urlpatterns = [
     path('', index),
-    path('contact', contact),
+    path('contact', contact, name='contact'),
     path('admin/', admin.site.urls),
     path('exchange/', include('exchange.urls'))
 ]

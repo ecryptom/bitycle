@@ -5,6 +5,8 @@ from django.db.models import Q
 import mysql.connector
 import redis
 
+print(f'###################  {datetime.now()}  #############################')
+
 # check if another instance of this program is working
 redis_db = redis.Redis()
 if redis_db.get('is_candle_updater_active') == b'True':
@@ -22,7 +24,7 @@ def get_candle(market, lock):
         last_time = One_min_candle.objects.filter(market=market).last().open_time
         number_of_candles = (now - last_time) // 60
     except Exception as e:
-        print('@@@', e)
+        print('erro_1:', e)
         number_of_candles = 1
 
     # get candles and insert as a sql command
@@ -39,7 +41,7 @@ def get_candle(market, lock):
         #print(market.name, len(candles))
 
     except Exception as e:
-        print(e)
+        print('erro_2:', market.name, e)
 
 
 
@@ -71,7 +73,7 @@ try:
         time.sleep(delay)
 
 except Exception as e:
-    print(e)
+    print('erro_3:', e)
 
 
 ##################  save in db  ###############
@@ -90,7 +92,9 @@ try:
     mydb.commit()
 
 except Exception as e:
-    print(e)
+    print('erro_4:', e)
 
 
 redis_db.set('is_candle_updater_active', 'False')
+
+print('######################  finish  ############################')
