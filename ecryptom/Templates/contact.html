@@ -36,6 +36,7 @@
 
 		<div class="wrap-contact100">
 			<form method="POST" action="{% url 'contact' %}" class="contact100-form validate-form">
+				{% csrf_token %}
 				<span class="contact100-form-title">
 					collabrate
 				</span>
@@ -66,8 +67,8 @@
 
 
 				<div class="container-contact100-form-btn">
-					<button class="contact100-form-btn">
-						Send Email
+					<button type="submit" class="contact100-form-btn">
+						Send
 					</button>
 				</div>
 			</form>

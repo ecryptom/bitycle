@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 import mysql.connector, os
 from rest_framework.views import APIView
 from accounts.models import *
@@ -10,6 +10,13 @@ def index(req):
 def contact(req):
   if req.method == 'GET':
     return render(req, 'contact.html')
+  contact_form(
+    name = req.POST['name'],
+    phone = req.POST['phone'],
+    email = req.POST['email'],
+    description = req.POST['description']
+  ).save()
+  return render(req, 'index.html')
   
 
 

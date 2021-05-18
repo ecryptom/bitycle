@@ -19,7 +19,7 @@ class User(AbstractUser):
 
 
 
-class contact(models.Model):
+class contact_form(models.Model):
     name = models.CharField(max_length=100, null=True)
     email = models.CharField(max_length=50, null=True)
     phone = models.CharField(max_length=20, null=True)
