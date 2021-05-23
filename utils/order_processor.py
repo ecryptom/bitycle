@@ -4,7 +4,7 @@ import redis
 
 redis_db = redis.Redis()
 redis_db.set('is_active', 'False')
-print('11111111111111111111111111')
+
 def process(sender, instance, **kwargs):
 
     # exit if another process is handelling orders

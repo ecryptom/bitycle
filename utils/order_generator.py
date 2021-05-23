@@ -115,6 +115,7 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
 
 
 toman = Currency.objects.get(symbol='TOMAN')
+popular_currencies = ['BTC', 'ETH', 'USDT', 'BNB', 'BCH']
 
 for market in Market.objects.filter(~Q(quote_currency=toman)):
     candle = One_min_candle.objects.filter(market=market).last()
@@ -128,8 +129,12 @@ for market in Market.objects.filter(~Q(quote_currency=toman)):
             price_in_USDT = One_min_candle.objects.filter(market=related_usdt_market).last().close_price
             average_volume = 1000 / price_in_USDT 
 
-        update_orders(market, candle.close_price, 'buy', average_volume, 2)
-        update_orders(market, candle.close_price, 'sell', average_volume, 2)
+        if market.base_currency.symbol in popular_currencies:
+            update_orders(market, candle.close_price, 'buy', average_volume, 7)
+            update_orders(market, candle.close_price, 'sell', average_volume, 7)
+        else:
+            update_orders(market, candle.close_price, 'buy', average_volume, 2)
+            update_orders(market, candle.close_price, 'sell', average_volume, 2)
 
     except Exception as e:
         print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
