@@ -7,6 +7,9 @@ class Currency(models.Model):
     persian_name = models.CharField(max_length=25)
     logo = models.URLField(null=True)
 
+    def __str__(self):
+        return self.name
+
 class Market(models.Model):
     name = models.CharField(max_length=15)
     base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='market_as_base')

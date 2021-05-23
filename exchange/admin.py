@@ -1,3 +1,5 @@
 from django.contrib import admin
+from exchange.models import Currency
 
-# Register your models here.
+admin.site.register(Currency)
+
