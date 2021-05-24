@@ -25,7 +25,7 @@ def process(sender, instance, **kwargs):
                     orders = Order.objects.filter(active=True, Type='sell', market=order.market, price__lte=order.price)
                     orders = orders.order_by('price')
                 elif order.Type == 'sell':
-                    orders = Order.objects.filter(active=True, Type='sell', market=order.market, price__lte=order.price)
+                    orders = Order.objects.filter(active=True, Type='buy', market=order.market, price__lte=order.price)
                     orders = orders.order_by('-price')
                 remaining_amount = order.remaining_amount()
 
