@@ -1,38 +1,56 @@
+from django.db.models import manager
 from django.shortcuts import redirect, render
-import mysql.connector, os
+from django.utils import tree
+from django.utils.translation import activate
 from rest_framework.views import APIView
 from accounts.models import *
+from exchange.models import *
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .serializers import *
+from django.utils import timezone
 
 ################ contact   #######################
 def index(req):
-  return render(req, 'index.html')
+    return render(req, 'index.html')
 
 def contact(req):
-  if req.method == 'GET':
-    return render(req, 'contact.html')
-  contact_form(
-    name = req.POST['name'],
-    phone = req.POST['phone'],
-    email = req.POST['email'],
-    description = req.POST['description']
-  ).save()
-  return render(req, 'index.html')
-  
+    if req.method == 'GET':
+        return render(req, 'contact.html')
+    contact_form(
+        name = req.POST['name'],
+        phone = req.POST['phone'],
+        email = req.POST['email'],
+        description = req.POST['description']
+    ).save()
+    return render(req, 'index.html')
+################ contact   #######################
+
+class market_orders(APIView):
+    def get(self, req):
+        market = Market.objects.filter(name=req.GET.get('market'))
+        if not market:
+            return Response({'status':'failed', 'error':'invalid market'})
+        orders = Order.objects.filter(market=market[0], active=True)
+        orders = OrderSerializer(orders, many=True)
+        return Response(orders.data)
 
 
-#connect to database
-mydb = mysql.connector.connect(
-  host=os.getenv('DATABASE_HOST'),
-  port=os.getenv('DATABASE_PORT'),
-  user=os.getenv('DATABASE_USER_NAME'),
-  password=os.getenv('DATABASE_USER_PASSWORD'),
-  database=os.getenv('DATABASE_NAME'),
-)
-
-
-class save_candles(APIView):
+class send_order(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, req):
-        sql_command = req.POST['sql_commands']
-        mycursor = mydb.cursor()
-        mycursor.execute(sql_command)
-        mydb.commit()
+        market = Market.objects.filter(name=req.POST.get('market'))
+        if not market:
+            return Response({'status':'failed', 'error':'invalid market'})
+        if req.POST.get('type') != 'sell' and req.POST.get('type') != 'buy':
+            return Response({'status':'failed', 'error':'invalid type'})
+        order = Order.objects.create(
+          Type = req.POST.get('type'),
+          user = req.user,
+          market = market[0],
+          price = float(req.POST['price']),
+          total_amount = float(req.POST['total_amount'])
+        )
+        Orders_queue(order=order).save()
+        return Response({'status':'suceess'})
+        

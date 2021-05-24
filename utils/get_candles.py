@@ -2,7 +2,7 @@ from datetime import datetime
 from exchange.models import One_min_candle, Market, Currency
 import requests, json, threading, time, os
 from django.db.models import Q
-import mysql.connector
+from utils.mysql_engine import execute_sql
 import redis
 
 print(f'###################  {datetime.now()}  #############################')
@@ -17,7 +17,7 @@ redis_db.set('is_candle_updater_active', 'True')
 sql = 'insert into exchange_one_min_candle (market_id, open_time, open_price, close_price, high_price, low_price) values '
 
 def get_candle(market, lock):
-    global requests, sql, datetime, One_min_candle, time, os
+    global requests, sql, datetime, One_min_candle, time
     # calcute number of candles must be received
     try:
         now = int(datetime.now().timestamp())
@@ -26,6 +26,8 @@ def get_candle(market, lock):
     except Exception as e:
         print('erro_1:', e)
         number_of_candles = 1
+        if 'Too many connections' in str(e):
+            execute_sql('SET GLOBAL max_connections = 1000;')
 
     # get candles and insert as a sql command
     try:
@@ -79,18 +81,7 @@ except Exception as e:
 ##################  save in db  ###############
 try:
     sql = sql[:-1] + ';'
-
-    mydb = mysql.connector.connect(
-          host=os.getenv('DATABASE_HOST'),
-          port=os.getenv('DATABASE_PORT'),
-          user=os.getenv('DATABASE_USER_NAME'),
-          password=os.getenv('DATABASE_USER_PASSWORD'),
-          database=os.getenv('DATABASE_NAME'),
-        )
-    mycursor = mydb.cursor()
-    mycursor.execute(sql)
-    mydb.commit()
-
+    execute_sql(sql)
 except Exception as e:
     print('erro_4:', e)
 

@@ -3,7 +3,11 @@ from accounts.models import User
 from django.utils import timezone
 import random
 from django.db.models import Q
-import mysql.connector
+from utils.mysql_engine import execute_sql
+from datetime import datetime
+
+
+print(f'###################  {datetime.now()}  #############################')
 
 ecryptom_user = User.objects.get(username='ecryptom')
 dollar = 25000
@@ -144,14 +148,6 @@ for market in Market.objects.filter(~Q(quote_currency=toman)):
 
 
 ##################  save changes in db     ################
-mydb = mysql.connector.connect(
-      host=os.getenv('DATABASE_HOST'),
-      port=os.getenv('DATABASE_PORT'),
-      user=os.getenv('DATABASE_USER_NAME'),
-      password=os.getenv('DATABASE_USER_PASSWORD'),
-      database=os.getenv('DATABASE_NAME'),
-    )
-mycursor = mydb.cursor()
 
 #  complete and execute the deactivation sql command
 deactive_orders_sql = deactive_orders_sql[:-1] + ''' ON DUPLICATE KEY UPDATE 
@@ -166,8 +162,7 @@ deactive_orders_sql = deactive_orders_sql[:-1] + ''' ON DUPLICATE KEY UPDATE
     active = VALUES(active);
     '''
 try:
-    mycursor.execute(deactive_orders_sql)
-    mydb.commit()
+    execute_sql(deactive_orders_sql)
 except Exception as e:
     print(e)
 
@@ -178,8 +173,7 @@ last_order = Order.objects.filter(user=ecryptom_user).last()
 # excomplete and execute the add order sql command
 add_orders_sql = add_orders_sql[:-1] + ';'
 try:
-    mycursor.execute(add_orders_sql)
-    mydb.commit()
+    execute_sql(add_orders_sql)
 except Exception as e:
     print(e)
 
@@ -190,9 +184,10 @@ try:
     values = [f'({order.id})' for order in new_orders]
     values.pop()
     orders_queue_sql = f'insert into exchange_orders_queue (order_id) values {",".join(values)};'
-    mycursor.execute(orders_queue_sql)
-    mydb.commit()
+    execute_sql(orders_queue_sql)
     # save last order with django orm to signal order_processor
     Orders_queue(order=new_orders.last()).save()
 except Exception as e:
     print(e)
+
+print('######################  finish  ############################')

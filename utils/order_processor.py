@@ -45,13 +45,13 @@ def process(sender, instance, **kwargs):
                             buyer=order.user if order.Type=='buy' else fit_order.user,
                             amount=fit_order.remaining_amount()
                         ).save()
-                        print(f'''
-                        amount : {fit_order.remaining_amount()}
-                        price : {order.price}
-                        market : {order.market.name}
-                        seller order : {order if order.Type=='sell' else fit_order}
-                        buyer order : {order if order.Type=='buy' else fit_order}
-                        ''')
+                        # print(f'''
+                        # amount : {fit_order.remaining_amount()}
+                        # price : {order.price}
+                        # market : {order.market.name}
+                        # seller order : {order if order.Type=='sell' else fit_order}
+                        # buyer order : {order if order.Type=='buy' else fit_order}
+                        # ''')
                         remaining_amount -= fit_order.remaining_amount()
                         fit_order.traded_amount = fit_order.total_amount
                         fit_order.active = False
@@ -67,13 +67,13 @@ def process(sender, instance, **kwargs):
                             buyer=order.user if order.Type=='buy' else fit_order.user,
                             amount=remaining_amount
                         ).save()
-                        print(f'''
-                        amount : {remaining_amount}
-                        price : {order.price}
-                        market : {order.market.name}
-                        seller order : {order if order.Type=='sell' else fit_order}
-                        buyer order : {order if order.Type=='buy' else fit_order}
-                        ''')
+                        # print(f'''
+                        # amount : {remaining_amount}
+                        # price : {order.price}
+                        # market : {order.market.name}
+                        # seller order : {order if order.Type=='sell' else fit_order}
+                        # buyer order : {order if order.Type=='buy' else fit_order}
+                        # ''')
                         fit_order.traded_amount += remaining_amount
                         fit_order.save()
                         remaining_amount = 0

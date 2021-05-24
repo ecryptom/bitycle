@@ -49,7 +49,7 @@ class Order(models.Model):
     total_amount = models.FloatField()
     traded_amount = models.FloatField(default=0)
     date = models.DateTimeField(auto_now=True)
-    expire_date = models.DateTimeField()
+    expire_date = models.DateTimeField(null=True)
     active = models.BooleanField(default=True, db_index=True)
     def remaining_amount(self):
         return self.total_amount - self.traded_amount
