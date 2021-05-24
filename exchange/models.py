@@ -6,6 +6,11 @@ class Currency(models.Model):
     symbol = models.CharField(max_length=10)
     persian_name = models.CharField(max_length=25)
     logo = models.URLField(null=True)
+    price = models.FloatField(default=0)
+    daily_price_change_pct = models.FloatField(default=0)
+    weekly_price_change_pct = models.FloatField(default=0)
+    turnover = models.FloatField(default=0)
+    market_cap = models.FloatField(default=0)
 
     def __str__(self):
         return self.name

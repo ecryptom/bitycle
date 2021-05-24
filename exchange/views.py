@@ -1,5 +1,4 @@
 from django.db.models import manager
-from django.shortcuts import redirect, render
 from django.utils import tree
 from django.utils.translation import activate
 from rest_framework.views import APIView
@@ -9,22 +8,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import *
 from django.utils import timezone
-
-################ contact   #######################
-def index(req):
-    return render(req, 'index.html')
-
-def contact(req):
-    if req.method == 'GET':
-        return render(req, 'contact.html')
-    contact_form(
-        name = req.POST['name'],
-        phone = req.POST['phone'],
-        email = req.POST['email'],
-        description = req.POST['description']
-    ).save()
-    return render(req, 'index.html')
-################ contact   #######################
 
 class market_orders(APIView):
     def get(self, req):
