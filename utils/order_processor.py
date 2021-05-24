@@ -22,17 +22,17 @@ def process(sender, instance, **kwargs):
                 order = head.order
                 #print(order, 'start')
                 if order.Type == 'buy':
-                    orders = Order.objects.filter(active=True).filter(Type='sell').filter(market=order.market).filter(price__lte=order.price)
+                    orders = Order.objects.filter(active=True, Type='sell', market=order.market, price__lte=order.price)
                     orders = orders.order_by('price')
                 elif order.Type == 'sell':
-                    orders = Order.objects.filter(active=True).filter(Type='buy').filter(market=order.market).filter(price__gte=order.price)
+                    orders = Order.objects.filter(active=True, Type='sell', market=order.market, price__lte=order.price)
                     orders = orders.order_by('-price')
                 remaining_amount = order.remaining_amount()
 
                 #check adaptable orders and perform transactions
                 for fit_order in orders:
 
-                    if fit_order.user == order.user:
+                    if fit_order.user == order.user and order.user.username=='ecryptom':
                         continue 
 
                     if fit_order.remaining_amount() <= remaining_amount:
