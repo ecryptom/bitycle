@@ -3,8 +3,9 @@ import json
 from exchange.models import *
 
 
-class indicator(models.Model):
+class Indicator(models.Model):
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
+    strategy = models.ForeignKey('strategies.Strategy', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=20)
     interval = models.CharField(max_length=3, choices=(('1m','1m'), ('5m','5m'), ('15m','15m'), ('1h','1h'), ('4h','4h'), ('1d', '1d'), ('1w','1w')))
     setup = models.TextField()
@@ -34,4 +35,8 @@ class indicator(models.Model):
             return One_week_candle
         
 
+class Strategy(models.Model):
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
+
+    
 
