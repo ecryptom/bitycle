@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'accounts',
     'exchange',
     'news',
+    'strategies',
 ]
 
 MIDDLEWARE = [
