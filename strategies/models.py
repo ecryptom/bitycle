@@ -4,19 +4,17 @@ from exchange.models import *
 
 
 class Indicator(models.Model):
-    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     strategy = models.ForeignKey('strategies.Strategy', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=20)
     interval = models.CharField(max_length=3, choices=(('1m','1m'), ('5m','5m'), ('15m','15m'), ('1h','1h'), ('4h','4h'), ('1d', '1d'), ('1w','1w')))
     setup = models.TextField()
-    lines = models.TextField()
-    last_status = models.TextField(default='{}')
-
+    line = models.CharField(max_length=20)
+    value_type = models.CharField(max_length=10, choices=(('num','num'), ('candle','candle'), ('indicator','indicator')))
+    value = models.CharField(max_length=50)
+    action = models.CharField(max_length=15)
+    
     def get_setup(self):
         return json.loads(self.setup)
-
-    def get_lines(self):
-        return json.loads(self.lines)
 
     def get_candle_class(self):
         if self.interval == '1m':
@@ -36,7 +34,11 @@ class Indicator(models.Model):
         
 
 class Strategy(models.Model):
+    name = models.CharField(max_length=20)
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
+    markets = models.ManyToManyField('exchange.Market')
+    min_interval = models.CharField(max_length=3, choices=(('1m','1m'), ('5m','5m'), ('15m','15m'), ('1h','1h'), ('4h','4h'), ('1d', '1d'), ('1w','1w')))
 
-    
+        
+
 

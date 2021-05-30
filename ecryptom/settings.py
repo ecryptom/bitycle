@@ -155,3 +155,11 @@ if os.getenv('on_host') == 'True':
 else:
     STATIC_ROOT = os.path.join(BASE_DIR, 'ecryptom/static')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'ecryptom/media')
+
+
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

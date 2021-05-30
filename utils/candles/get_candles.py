@@ -3,7 +3,7 @@ from exchange.models import One_min_candle, Market, Currency
 import requests, json, threading, time, os
 from django.db.models import Q
 from utils.mysql_engine import execute_sql
-import redis
+import redis, time
 
 print(f'###################  {datetime.now()}  #############################')
 
@@ -12,6 +12,7 @@ redis_db = redis.Redis()
 if redis_db.get('is_candle_updater_active') == b'True':
     exit()
 redis_db.set('is_candle_updater_active', 'True')
+redis_db.set('candle_updater_time', time.time())
 
 
 sql = 'insert into exchange_one_min_candle (market_id, open_time, open_price, close_price, high_price, low_price) values '
@@ -37,13 +38,15 @@ def get_candle(market, lock):
         time.sleep(0.1)
     
         lock.acquire()
-        for candle in candles[:300]:
+
+        for candle in candles[:300][:-1]:
             sql += f'({market_id}, {candle[0]}, {candle[1]},{candle[2]},{candle[3]},{candle[4]}),'
         lock.release()
         #print(market.name, len(candles))
 
     except Exception as e:
         print('erro_2:', market.name, e)
+        lock.release()
 
 
 
