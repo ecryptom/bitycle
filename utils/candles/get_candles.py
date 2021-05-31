@@ -26,7 +26,7 @@ def get_candle(market, lock):
         number_of_candles = (now - last_time) // 60
     except Exception as e:
         print('erro_1:', e)
-        number_of_candles = 1
+        number_of_candles = 10
         if 'Too many connections' in str(e):
             execute_sql('SET GLOBAL max_connections = 1000;')
 
