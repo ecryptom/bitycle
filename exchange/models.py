@@ -23,7 +23,7 @@ class Market(models.Model):
 
 class One_min_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    open_time = models.IntegerField()
+    open_time = models.IntegerField(db_index=True)
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
@@ -31,7 +31,7 @@ class One_min_candle(models.Model):
 
 class Five_min_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    open_time = models.IntegerField()
+    open_time = models.IntegerField(db_index=True)
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
@@ -39,7 +39,7 @@ class Five_min_candle(models.Model):
 
 class Fifteen_min_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    open_time = models.IntegerField()
+    open_time = models.IntegerField(db_index=True)
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
@@ -47,7 +47,7 @@ class Fifteen_min_candle(models.Model):
 
 class One_hour_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    open_time = models.IntegerField()
+    open_time = models.IntegerField(db_index=True)
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
@@ -55,7 +55,7 @@ class One_hour_candle(models.Model):
 
 class Four_hour_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    open_time = models.IntegerField()
+    open_time = models.IntegerField(db_index=True)
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
@@ -63,7 +63,7 @@ class Four_hour_candle(models.Model):
 
 class One_day_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    open_time = models.IntegerField()
+    open_time = models.IntegerField(db_index=True)
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()
@@ -71,7 +71,7 @@ class One_day_candle(models.Model):
 
 class One_week_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    open_time = models.IntegerField()
+    open_time = models.IntegerField(db_index=True)
     open_price = models.FloatField()
     close_price = models.FloatField()
     high_price = models.FloatField()

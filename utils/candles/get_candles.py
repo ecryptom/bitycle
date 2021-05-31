@@ -22,7 +22,7 @@ def get_candle(market, lock):
     # calcute number of candles must be received
     try:
         now = int(datetime.now().timestamp())
-        last_time = One_min_candle.objects.filter(market=market).last().open_time
+        last_time = One_min_candle.objects.filter(market=market).order_by('open_time').last().open_time
         number_of_candles = (now - last_time) // 60
     except Exception as e:
         print('erro_1:', e)

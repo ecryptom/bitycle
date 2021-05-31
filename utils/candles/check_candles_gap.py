@@ -21,6 +21,8 @@ def check(market, start, end=time.time()):
         dif = times[i] - times[i-1]
         if dif < 0:
             print('negetive!!')
+        if dif == 0:
+            print('duplicat candle',market.name,times[i])
         elif dif != 60:
             for t in range(times[i-1]+60, times[i], 60):
                 gap_times.append(t)
