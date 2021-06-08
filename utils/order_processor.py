@@ -20,7 +20,7 @@ def process(sender, instance, **kwargs):
         while head:
             try:
                 order = head.order
-                #print(order, 'start')
+                # print(order, 'start')
                 if order.Type == 'buy':
                     orders = Order.objects.filter(active=True, Type='sell', market=order.market, price__lte=order.price)
                     orders = orders.order_by('price')
@@ -36,48 +36,95 @@ def process(sender, instance, **kwargs):
                         continue 
 
                     if fit_order.remaining_amount() <= remaining_amount:
-                        Transaction(
-                            market=order.market,
-                            price=order.price,
-                            seller_order=order if order.Type=='sell' else fit_order,
-                            buyer_order=order if order.Type=='buy' else fit_order,
-                            seller=order.user if order.Type=='sell' else fit_order.user,
-                            buyer=order.user if order.Type=='buy' else fit_order.user,
-                            amount=fit_order.remaining_amount()
-                        ).save()
-                        # print(f'''
-                        # amount : {fit_order.remaining_amount()}
-                        # price : {order.price}
-                        # market : {order.market.name}
-                        # seller order : {order if order.Type=='sell' else fit_order}
-                        # buyer order : {order if order.Type=='buy' else fit_order}
-                        # ''')
-                        remaining_amount -= fit_order.remaining_amount()
-                        fit_order.traded_amount = fit_order.total_amount
-                        fit_order.active = False
-                        fit_order.save()
+                        seller_order = order if order.Type=='sell' else fit_order
+                        buyer_order = order if order.Type=='buy' else fit_order
+                        amount = fit_order.remaining_amount()
+                        price = order.price
+
+                        # check balace
+                        source_seller_wallet = seller_order.user.get_wallet(order.market.base_currency)
+                        destination_seller_wallet = seller_order.user.get_wallet(order.market.quote_currency)
+                        source_buyer_wallet = buyer_order.user.get_wallet(order.market.quote_currency)
+                        destination_buyer_wallet = buyer_order.user.get_wallet(order.market.base_currency)
+                        if source_seller_wallet.balance >= amount and source_buyer_wallet.balance >= amount*price:                        
+                            Transaction(
+                                market=order.market,
+                                price=order.price,
+                                seller_order=seller_order,
+                                buyer_order=buyer_order,
+                                seller=seller_order.user,
+                                buyer=buyer_order.user,
+                                amount=amount,
+                            ).save()
+
+                            # update wallets balance
+                            source_seller_wallet.balance -= amount
+                            destination_seller_wallet.balance += amount*price
+                            source_buyer_wallet.balance -= amount*price
+                            destination_buyer_wallet.balance += amount
+
+                            source_seller_wallet.save()
+                            destination_seller_wallet.save()
+                            source_buyer_wallet.save()
+                            destination_buyer_wallet.save()
+
+                            # print(f'''
+                            # amount : {fit_order.remaining_amount()}
+                            # price : {order.price}
+                            # market : {order.market.name}
+                            # seller order : {order if order.Type=='sell' else fit_order}
+                            # buyer order : {order if order.Type=='buy' else fit_order}
+                            # ''')
+
+                            remaining_amount -= amount
+                            fit_order.traded_amount = fit_order.total_amount
+                            fit_order.active = False
+                            fit_order.save()
 
                     else:
-                        Transaction(
-                            market=order.market,
-                            price=order.price,
-                            seller_order=order if order.Type=='sell' else fit_order,
-                            buyer_order=order if order.Type=='buy' else fit_order,
-                            seller=order.user if order.Type=='sell' else fit_order.user,
-                            buyer=order.user if order.Type=='buy' else fit_order.user,
-                            amount=remaining_amount
-                        ).save()
-                        # print(f'''
-                        # amount : {remaining_amount}
-                        # price : {order.price}
-                        # market : {order.market.name}
-                        # seller order : {order if order.Type=='sell' else fit_order}
-                        # buyer order : {order if order.Type=='buy' else fit_order}
-                        # ''')
-                        fit_order.traded_amount += remaining_amount
-                        fit_order.save()
-                        remaining_amount = 0
-                        break
+                        seller_order = order if order.Type=='sell' else fit_order
+                        buyer_order = order if order.Type=='buy' else fit_order
+                        amount = remaining_amount
+                        price = order.price
+                        # check balace
+                        source_seller_wallet = seller_order.user.get_wallet(order.market.base_currency)
+                        destination_seller_wallet = seller_order.user.get_wallet(order.market.quote_currency)
+                        source_buyer_wallet = buyer_order.user.get_wallet(order.market.quote_currency)
+                        destination_buyer_wallet = buyer_order.user.get_wallet(order.market.base_currency)
+                        if source_seller_wallet.balance >= amount and source_buyer_wallet.balance >= amount*price:  
+                            Transaction(
+                                market=order.market,
+                                price=order.price,
+                                seller_order=seller_order,
+                                buyer_order=buyer_order,
+                                seller=seller_order.user,
+                                buyer=buyer_order.user,
+                                amount=remaining_amount,
+                            ).save()
+
+                            # update wallets balance
+                            source_seller_wallet.balance -= amount
+                            destination_seller_wallet.balance += amount*price
+                            source_buyer_wallet.balance -= amount*price
+                            destination_buyer_wallet.balance += amount
+
+                            source_seller_wallet.save()
+                            destination_seller_wallet.save()
+                            source_buyer_wallet.save()
+                            destination_buyer_wallet.save()
+
+                            # print(f'''
+                            # amount : {remaining_amount}
+                            # price : {order.price}
+                            # market : {order.market.name}
+                            # seller order : {order if order.Type=='sell' else fit_order}
+                            # buyer order : {order if order.Type=='buy' else fit_order}
+                            # ''')
+
+                            fit_order.traded_amount += amount
+                            fit_order.save()
+                            remaining_amount = 0
+                            break
 
                 order.remaining_amount = remaining_amount
                 order.traded_amount = order.total_amount - remaining_amount

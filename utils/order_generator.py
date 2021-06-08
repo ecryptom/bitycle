@@ -46,7 +46,7 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
             \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
             {0}),'''
 
-        #print(f'''
+        # print(f'''
         #    '-expire-'
         #    type : {Type}
         #    market : {market.name}
@@ -75,13 +75,13 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
                 \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
                 {0}),'''
 
-            #print(f'''
-            #'--'
-            #type : {Type}
-            #market : {market.name}
-            #price : {order.price}
-            #total_ammount: {order.total_amount}
-            #''')
+            # print(f'''
+            # '--'
+            # type : {Type}
+            # market : {market.name}
+            # price : {order.price}
+            # total_ammount: {order.total_amount}
+            # ''')
             
     #if count > 0 then generate new orders
     if count > 0:
@@ -106,15 +106,15 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
                 \'{(timezone.now()+timezone.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")}\',
                 {1}
             ),'''
-            #o.save()
-            #Orders_queue(order=o).save()
-            #print(f'''
-            #'++'
-            #type : {Type}
-            #market : {market.name}
-            #price : {o.price}
-            #total_ammount: {o.total_amount}
-            #''')
+            # o.save()
+            # Orders_queue(order=o).save()
+            # print(f'''
+            # '++'
+            # type : {Type}
+            # market : {market.name}
+            # price : {o.price}
+            # total_ammount: {o.total_amount}
+            # ''')
 
 
 

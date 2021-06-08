@@ -1,5 +1,5 @@
 import json
-from exchange.models import Currency, Market
+from exchange.models import Currency, Market, Wallet
 from accounts.models import User
 from utils.constant_variables import markets, currencies
 
@@ -47,6 +47,14 @@ if not User.objects.filter(username='ecryptom'):
         verified_phone=True,
         name=''
     ).save()
+    print('create ecryptom_user')
 
-
-
+#################  initialize ecryptom_user wallet  ################
+ecryptom_user = User.objects.get(username='ecryptom')
+for cur in Currency.objects.all():
+    if not Wallet.objects.filter(user=ecryptom_user, currency=cur):
+        Wallet(
+            user = ecryptom_user,
+            currency = cur
+        ).save()
+        print(f'wallet {cur.name} for ecryptom_user')

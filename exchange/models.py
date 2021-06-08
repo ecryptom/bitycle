@@ -114,3 +114,11 @@ class Orders_queue(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE)
 
 
+class Wallet(models.Model):
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='wallets')
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='wallets')
+    balance = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'currency',)
+

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from utils import order_processor
+from exchange.models import *
 
 class User(AbstractUser): 
     phone = models.CharField(max_length=15, unique=True)
@@ -16,3 +17,7 @@ class User(AbstractUser):
     last_name = None
     name = models.CharField(max_length=30 ,default='')
     shamsi_joined_date = models.CharField(max_length=11, null=True)
+
+    def get_wallet(self, currency):
+        wallet, status = Wallet.objects.get_or_create(user=self, currency=currency)
+        return wallet
