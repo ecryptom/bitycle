@@ -28,6 +28,7 @@ class One_min_candle(models.Model):
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
+    volume = models.FloatField(default=0)
 
 class Five_min_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -36,6 +37,7 @@ class Five_min_candle(models.Model):
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
+    volume = models.FloatField(default=0)
 
 class Fifteen_min_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -44,6 +46,7 @@ class Fifteen_min_candle(models.Model):
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
+    volume = models.FloatField(default=0)
 
 class One_hour_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -52,6 +55,7 @@ class One_hour_candle(models.Model):
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
+    volume = models.FloatField(default=0)
 
 class Four_hour_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -60,6 +64,7 @@ class Four_hour_candle(models.Model):
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
+    volume = models.FloatField(default=0)
 
 class One_day_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -68,6 +73,7 @@ class One_day_candle(models.Model):
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
+    volume = models.FloatField(default=0)
 
 class One_week_candle(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -76,6 +82,7 @@ class One_week_candle(models.Model):
     close_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
+    volume = models.FloatField(default=0)
 
 
 class Order(models.Model):

@@ -32,7 +32,9 @@ def batch_candles(candles_batch, open_time, market, target_class):
         close_price = candles_batch[-1].close_price,
         high_price = max([c.high_price for c in candles_batch]),
         low_price = min([c.low_price for c in candles_batch]),
+        volume = sum([c.volume for c in candles_batch])
     ).save()
+    print(market.name, open_time)
 
 
 # 
@@ -48,7 +50,7 @@ def create_target_candles(market, source_interval, target_interval):
         candles = requests.get(f'https://api.coinex.com/v1/market/kline?market={market.name}&limit=2&type={target_interval}').json()
         candles = candles['data']
         for candle in candles:
-            target_class(market=market,open_time=candle[0], open_price=candle[1], close_price=candle[2], high_price=candle[3], low_price=candle[4]).save()
+            target_class(market=market,open_time=candle[0], open_price=candle[1], close_price=candle[2], high_price=candle[3], low_price=candle[4], volume=candle[5]).save()
         if len(candles) != 0:
             print(market.name, f'fetched first {target_interval} candles')
         return

@@ -15,7 +15,7 @@ redis_db.set('is_candle_updater_active', 'True')
 redis_db.set('candle_updater_time', time.time())
 
 
-sql = 'insert into exchange_one_min_candle (market_id, open_time, open_price, close_price, high_price, low_price) values '
+sql = 'insert into exchange_one_min_candle (market_id, open_time, open_price, close_price, high_price, low_price, volume) values '
 
 def get_candle(market, lock):
     global requests, sql, datetime, One_min_candle, time
@@ -40,7 +40,7 @@ def get_candle(market, lock):
         lock.acquire()
 
         for candle in candles[:300][:-1]:
-            sql += f'({market_id}, {candle[0]}, {candle[1]},{candle[2]},{candle[3]},{candle[4]}),'
+            sql += f'({market_id}, {candle[0]}, {candle[1]},{candle[2]},{candle[3]},{candle[4]}, {candle[5]}),'
         lock.release()
         #print(market.name, len(candles))
 
