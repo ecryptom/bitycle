@@ -12,8 +12,8 @@ print(f'###################  {datetime.now()}  #############################')
 ecryptom_user = User.objects.get(username='ecryptom')
 dollar = 25000
 
-deactive_orders_sql = 'INSERT INTO exchange_order (id, Type, user_id, market_id, price, total_amount, traded_amount,date, expire_date, active) VALUES '
-add_orders_sql = 'insert into exchange_order (Type, user_id, market_id, price, total_amount, traded_amount,date, expire_date, active) values '
+deactive_orders_sql = 'INSERT INTO exchange_order (id, Type, user_id, market_id, price, total_amount, traded_amount,date, expire_date, active, base_currency_id, quote_currency_id) VALUES '
+add_orders_sql = 'insert into exchange_order (Type, user_id, market_id, price, total_amount, traded_amount,date, expire_date, active, base_currency_id, quote_currency_id) values '
 
 def update_orders(market, price, Type, average_volume, number_of_orders):
     global Currency, Order, timezone, ecryptom_user, random, dollar, Orders_queue, deactive_orders_sql, add_orders_sql
@@ -44,7 +44,9 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
             {order.traded_amount},
             \'{order.date.strftime("%Y-%m-%d %H:%M:%S")}\',
             \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
-            {0}),'''
+            {0},
+            {order.market.base_currency.id},
+            {order.market.quote_currency.id}),'''
 
         # print(f'''
         #    '-expire-'
@@ -73,7 +75,9 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
                 {order.traded_amount},
                 \'{order.date.strftime("%Y-%m-%d %H:%M:%S")}\',
                 \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
-                {0}),'''
+                {0},
+                {order.market.base_currency.id},
+                {order.market.quote_currency.id}),'''
 
             # print(f'''
             # '--'
@@ -104,7 +108,9 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
                 {0},
                 \'{timezone.now().strftime("%Y-%m-%d %H:%M:%S")}\',
                 \'{(timezone.now()+timezone.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")}\',
-                {1}
+                {1},
+                {market.base_currency.id},
+                {market.quote_currency.id}
             ),'''
             # o.save()
             # Orders_queue(order=o).save()
@@ -159,7 +165,9 @@ deactive_orders_sql = deactive_orders_sql[:-1] + ''' ON DUPLICATE KEY UPDATE
     traded_amount = VALUES(traded_amount),
     date = VALUES(date),
     expire_date=VALUES(expire_date),
-    active = VALUES(active);
+    active = VALUES(active),
+    base_currency_id = VALUES(base_currency_id), 
+    quote_currency_id = VALUES(quote_currency_id);
     '''
 try:
     execute_sql(deactive_orders_sql)

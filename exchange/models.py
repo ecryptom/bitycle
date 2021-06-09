@@ -1,4 +1,6 @@
 from django.db import models
+from decimal import Decimal, getcontext
+
 
 
 class Currency(models.Model):
@@ -11,6 +13,7 @@ class Currency(models.Model):
     weekly_price_change_pct = models.FloatField(default=0)
     turnover = models.FloatField(default=0)
     market_cap = models.FloatField(default=0)
+    rank = models.IntegerField()
 
     def __str__(self):
         return self.name
@@ -19,6 +22,17 @@ class Market(models.Model):
     name = models.CharField(max_length=15)
     base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='market_as_base')
     quote_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='market_as_quote')
+
+    def get_info(self):
+        last_1min_candle = One_min_candle.objects.filter(market=self).last()
+        last_1day_candle = One_day_candle.objects.filter(market=self).last()
+        return {
+            'price': last_1min_candle.close_price,
+            'daily_price_change_pct': self.base_currency.daily_price_change_pct,
+            'market_cap': self.base_currency.market_cap,
+            'high_daily_price': last_1day_candle.high_price,
+            'low_daily_price': last_1day_candle.low_price
+        }
 
 
 class One_min_candle(models.Model):
@@ -92,11 +106,22 @@ class Order(models.Model):
     price = models.FloatField()
     total_amount = models.FloatField()
     traded_amount = models.FloatField(default=0)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(auto_now_add=True)
     expire_date = models.DateTimeField(null=True)
     active = models.BooleanField(default=True, db_index=True)
+    base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='orders_as_base')
+    quote_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='orders_as_quote')
+
     def remaining_amount(self):
-        return self.total_amount - self.traded_amount
+        getcontext().prec = 10
+        return float(Decimal(self.total_amount)-Decimal(self.traded_amount))
+
+    def market_name(self):
+        return self.market.name
+
+    def average_traded_price(self):
+        transactions = self.sales_transactions.all() if self.Type=='sell' else self.buy_transactions.all()
+        return sum([tran.price*tran.amount for tran in transactions]) / sum([tran.amount for tran in transactions])
     
 
 class Transaction(models.Model):
@@ -107,7 +132,7 @@ class Transaction(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     price = models.FloatField()
     amount = models.FloatField()
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(auto_now_add=True)
 
 
 class Orders_queue(models.Model):
@@ -118,6 +143,16 @@ class Wallet(models.Model):
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='wallets')
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='wallets')
     balance = models.FloatField(default=0)
+
+    def blocked_balance(self):
+        sell_orders = Order.objects.filter(active=True, user=self.user, Type='sell', base_currency=self.currency)
+        buy_orders = Order.objects.filter(active=True, user=self.user, Type='buy', quote_currency=self.currency)
+        s1 = sum([order.remaining_amount() for order in sell_orders])
+        s2 = sum([order.remaining_amount()*order.price for order in buy_orders])
+        return s1 + s2
+
+    def non_blocked_balance(self):
+        return self.balance - self.blocked_balance()
 
     class Meta:
         unique_together = ('user', 'currency',)

@@ -1,0 +1,564 @@
+swagger: "2.0"
+info:
+  description: This is All Available APIs
+  version: 1.0.0
+  title: bitcyle API
+
+host: http://bitycle.com
+schemes:
+ - http
+
+tags:
+- name: Account
+  description: Account APIs
+- name: Exchange
+  description: Exchange APIs
+- name: News
+  description: News APIs
+
+
+paths:
+  /api/account/register:
+    post:
+      tags:
+        - Account
+      summary: register in site (it's just a test form!)
+      description: register in site
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: market_orders
+        schema:
+          type: object
+          required:
+          - username
+          - password
+          - phone
+          properties:
+            username:
+              type: string
+              example: ali29
+            password:
+              type: string
+              example: 123a
+            phone:
+              type: string
+              example: 0990949767a
+      responses:
+        200-1:
+          description: not available username
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              token: 
+                type: string
+                example: Token aa64af4f43f25446a49dcaf4acca199765a4c1ee
+        200-2:
+          description: not available username
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: not available username
+
+  /api/account/login:
+    post:
+      tags:
+        - Account
+      summary: register in site (it's just a test form!)
+      description: register in site
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: market_orders
+        schema:
+          type: object
+          required:
+          - username
+          - password
+          properties:
+            username:
+              type: string
+              example: ali29
+            password:
+              type: string
+              example: 123a
+      responses:
+        200-1:
+          description: not available username
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              token: 
+                type: string
+                example: Token aa64af4f43f25446a49dcaf4acca199765a4c1ee
+        200-2:
+          description: not found'
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: not found
+
+
+  /api/account/user_market_orders:
+    get:
+      tags:
+        - Account
+      summary: get all user orders that are  in specific market
+      description: get all user orders that are  in specific market
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: Authorization
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: body
+        name: user_market_orders
+        schema:
+          type: object
+          required:
+          - market
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: list
+            example: [{"id":19015,"Type":"buy","price":2725.0,"market_name":"ETHUSDT","total_amount":0.4253,"traded_amount":0.3253205,"remaining_amount":0.1,"average_traded_price":2725.0,"date":"2021-06-09T17:41:28.490226+04:30"},..]      
+        200-2:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market
+        401:
+          description: token is not valid
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+
+
+  /api/account/user_active_market_orders:
+    get:
+      tags:
+        - Account
+      summary: get all user orders that are active and are  in specific market
+      description: get all user orders that are active and are  in specific market
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: Authorization
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: body
+        name: user_active_market_orders
+        schema:
+          type: object
+          required:
+          - market
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: list
+            example: [{"id":19015,"Type":"buy","price":2725.0,"market_name":"ETHUSDT","total_amount":0.4253,"traded_amount":0.3253205,"remaining_amount":0.1,"average_traded_price":2725.0,"date":"2021-06-09T17:41:28.490226+04:30"},..]      
+        200-2:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market
+        401:
+          description: token is not valid
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+
+
+
+
+
+
+
+
+
+
+
+
+  /api/exchange/market_orders:
+    get:
+      tags:
+        - Exchange
+      summary: get sell and buy orders of a market
+      description: send the name of market (eg. BTCUSDT) and get sell and buy orders of that
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: market_orders
+        schema:
+          type: object
+          required:
+          - market
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            properties:
+              sell_orders:
+                type: list
+                example: [{"id":17689,"Type":"sell","price":25.25,"market_name":"BTCUSDT","remaining_amount":645.0868584, "date": "2021-06-09T01:43:11+04:30"},...]
+              buy_orders:
+                type: list
+                example: [{"id":17689,"Type":"buy","price":25.25,"market_name":"BTCUSDT","remaining_amount":645.0868584, "date": "2021-06-09T01:43:11+04:30"},...]
+        200-2:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market
+
+  /api/exchange/market_transactions:
+    get:
+      tags:
+        - Exchange
+      summary: get last 20 transactions of a market
+      description: get last 20 transactions of a market
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: market_orders
+        schema:
+          type: object
+          required:
+          - market
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            example: [{"price":40000.0,"amount":0.008153920808752642,"date":"2021-06-09T01:56:54.013404+04:30"},{"price":40000.0,"amount":0.008153920808752642,"date":"2021-06-09T01:56:54.073276+04:30"}]
+        200-2:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market
+ 
+
+  /api/exchange/markets:
+    get:
+      tags:
+        - Exchange
+      summary: get a dictionary that each key is a currency and its value is a list of currencies that can be paired with that key
+      description: for example {"BTC":["USDT", "TOMAN"]} means there is tow markets (BTCUSDT & BTCTOMAN)
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            example: {"CFX":["USDT","BTC","TOMAN"],"SUSHI":["BTC","ETH","USDT","TOMAN"]}
+
+  
+  /api/exchange/send_order:
+    post:
+      tags:
+        - Exchange
+      summary: create a new order
+      description: create a new order
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: Authorization
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: body
+        name: market_orders
+        schema:
+          type: object
+          required:
+          - market
+          - type
+          - price
+          - amount
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+            type:
+              type: string
+              example: sell or buy
+            price:
+              type: integer
+              example: 35000
+            amount:
+              type: integer
+              example: 0.0125
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+        200-2:
+          description: user has not enough balance
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: low inventory
+        200-3:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market
+        200-4:
+          description: invalid type (type must be sell or buy)
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid type
+        200-5:
+          description: invalid amount (amount must be greater than zero
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid amount
+        401:
+          description: token is not valid
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+        
+
+  /api/exchange/market_currencies:
+    get:
+      tags:
+        - Exchange
+      summary: information of market currencies 
+      description: information of market currencies 
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: market_orders
+        schema:
+          type: object
+          required:
+          - market
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            example: {"base_currency":{"name":"bitcoin","symbol":"BTC","persian_name":"بیت کوین","logo":"<url>"},"quote_currency":{"name":"tether","symbol":"USDT","persian_name":"تتر","logo":"<url>"}}
+        200-2:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market
+
+
+  /api/exchange/market_info:
+    get:
+      tags:
+        - Exchange
+      summary: market information
+      description: market information like price daily change
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: market_orders
+        schema:
+          type: object
+          required:
+          - market
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            example: {"price":35581.0,"daily_price_change_pct":11.55999,"market_cap":709990162887.0,"high_daily_price":36947.8,"low_daily_price":32402.34}
+        200-3:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market
+
+
+  /api/news/market_news:
+    get:
+      tags:
+        - News
+      summary: get news of a market
+      description: get news of a market
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: market_news
+        schema:
+          type: object
+          required:
+          - market
+          properties:
+            market:
+              type: string
+              example: BTCUSDT
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            example: {"title":"آمریکا و اروپا ","body":"... استخراج دو مورد مهم آن است.","date":"2021-05-23","src_name":"CryptoSlate","src_link":"https://cryptoslate.com/europe-and-u-s-may-soon-take-the-lead-in-bitcoin-mining-says-major-chinese-pool/","pump":432,"dump":44}
+        200-3:
+          description: invalid market name
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid market

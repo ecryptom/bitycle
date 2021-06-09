@@ -10,7 +10,8 @@ for cur in currencies:
             name = cur[0],
             symbol = cur[1],
             persian_name = cur[2],
-            logo=cur[3]
+            logo=cur[3],
+            rank=cur[4]
         ).save()
         print(cur[0])
 
