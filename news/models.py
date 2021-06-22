@@ -13,8 +13,8 @@ class News(models.Model):
     date=models.DateField()
     pump=models.IntegerField()
     dump=models.IntegerField()
-    link_arzdg=models.URLField()
-    post_id_arzdg=models.CharField(max_length=10)
+    link_arzdg=models.URLField(null=True)
+    post_id_arzdg=models.CharField(max_length=10, null=True)
     currency=models.ManyToManyField(Currency)
 
     def __str__(self):
