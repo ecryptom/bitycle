@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 from exchange.models import Currency
 from news.models import News
 from datetime import datetime
+from utils.constant_variables import key_words
+from django.db.models import Q
 
 
 resp=requests.get("https://www.coinit.ir/category/news-article/")
@@ -43,18 +45,8 @@ for i in range(len(dives)):
     news1=News(title=title, body=body, image=img, src_name=src_name, src_link=src_link, src_image=src_img, date=date_time_obj, pump=sod_num, dump=zarar_num)
     news1.save()
 
-    # # get related currencies from tags and add to news1
-    # try:        
-    #     try:
-    #         arz=dives[i].findAll('a',{'class':'arz-breaking-news-post__info-related-coins'})[0].findAll('img')
-    #         for j in range(len(arz)):
-    #             cr1=Currency.objects.get(name=str(arz[j]['alt']).lower())
-    #             news1.currency.add(cr1)
-    #     except:
-    #         arz4=dives[i].findAll('div',{'class':'arz-breaking-news-post__info-related-coins'})[0].findAll('a',{'class':'arz-breaking-news-post__info-related-coin arz-tooltip'})
-    #         for i in range(len(arz4)):
-    #             arz = arz4[i].findAll('img')[0]['alt']
-    #             cr1=Currency.objects.get(name=str(arz).lower())
-    #             news1.currency.add(cr1)
-    # except Exception as e:
-    #     print('error @2', e)
+    txt = sub+msg+title
+    for word in key_words:
+        if word in txt:
+            for cur in Currency.objects.filter(Q(name=word) | Q(persian_name=word) | Q(symbol=word)):
+                news1.currency.add(cur)

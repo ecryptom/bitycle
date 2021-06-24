@@ -34,7 +34,7 @@ def batch_candles(candles_batch, open_time, market, target_class):
         low_price = min([c.low_price for c in candles_batch]),
         volume = sum([c.volume for c in candles_batch])
     ).save()
-    print(market.name, open_time)
+    # print(market.name, open_time)
 
 
 # 
