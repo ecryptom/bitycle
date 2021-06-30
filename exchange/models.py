@@ -125,6 +125,9 @@ class Order(models.Model):
             return sum([tran.price*tran.amount for tran in transactions]) / sum([tran.amount for tran in transactions])
         else:
             return 0
+
+    def total_price(self):
+        return self.total_amount * self.price
     
 
 class Transaction(models.Model):

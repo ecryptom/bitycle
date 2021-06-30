@@ -8,4 +8,6 @@ urlpatterns = [
     path('market_currencies', market_currencies.as_view()),
     path('market_info', market_info.as_view()),
     path('market_transactions', market_transactions.as_view()),
+    path('deactivate_order', deactivate_order.as_view()),
+    path('top_markets_info', top_markets_info.as_view()),
 ]

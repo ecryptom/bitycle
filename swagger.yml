@@ -153,7 +153,7 @@ paths:
           description: success
           schema:
             type: list
-            example: [{"id":19015,"Type":"buy","price":2725.0,"market_name":"ETHUSDT","total_amount":0.4253,"traded_amount":0.3253205,"remaining_amount":0.1,"average_traded_price":2725.0,"date":"2021-06-09T17:41:28.490226+04:30"},..]      
+            example: [{"id":19015,"Type":"buy","price":2725.0,"market_name":"ETHUSDT","total_amount":0.4253,"traded_amount":0.3253205,"total_price":223.25,"average_traded_price":2725.0,"date":"2021-06-09T17:41:28.490226+04:30"},..]      
         200-2:
           description: invalid market name
           schema:
@@ -207,7 +207,7 @@ paths:
           description: success
           schema:
             type: list
-            example: [{"id":19015,"Type":"buy","price":2725.0,"market_name":"ETHUSDT","total_amount":0.4253,"traded_amount":0.3253205,"remaining_amount":0.1,"average_traded_price":2725.0,"date":"2021-06-09T17:41:28.490226+04:30"},..]      
+            example: [{"id":19015,"Type":"buy","price":2725.0,"market_name":"ETHUSDT","total_amount":0.4253,"traded_amount":0.3253205,"total_price":2563.3,"average_traded_price":2725.0,"date":"2021-06-09T17:41:28.490226+04:30"},..]      
         200-2:
           description: invalid market name
           schema:
@@ -227,7 +227,6 @@ paths:
               detail:
                 type: string
                 example: Authentication credentials were not provided.
-
 
 
 
@@ -562,3 +561,78 @@ paths:
               error:
                 type: string
                 example: invalid market
+
+
+  /api/exchange/deactivate_order:
+    post:
+      tags:
+        - Exchange
+      summary: deactive an order
+      description: deactive an order
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: Authorization
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: body
+        name: deactivate_order
+        schema:
+          type: object
+          required:
+          - order_id
+          properties:
+            order_id:
+              type: integer
+              example: 255
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+        200-3:
+          description: invalid order_id
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: failed
+              error:
+                type: string
+                example: invalid order_id
+        401:
+          description: token is not valid
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+
+
+  /api/exchange/top_markets_info:
+    get:
+      tags:
+        - Exchange
+      summary: top_markets_info
+      description: top_markets_info
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200-1:
+          description: success
+          schema:
+            type: object
+            example: [{"name":"BTC/USDT","price":37939.59307285,"daily_change":"11.56"},{"name":"ETH/USDT","price":2429.52357643,"daily_change":"22.49"}]

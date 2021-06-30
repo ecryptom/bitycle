@@ -1,4 +1,5 @@
 from django.http import HttpResponseBadRequest
+from django.http.response import JsonResponse
 from rest_framework.views import APIView
 from accounts.models import *
 from exchange.models import *
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import *
 from django.utils import timezone
+import json
 
 
 def validate_data(data, required_data):
@@ -133,3 +135,33 @@ class market_transactions(APIView):
         transactions = list(market[0].transaction_set.all())[-20:]
         transactions = TransactionSerializer(transactions, many=True)
         return Response(transactions.data)
+
+
+class deactivate_order(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, req):
+        data = req.POST
+        # check data
+        if not validate_data(data, ['order_id']):
+            return HttpResponseBadRequest(f"required_data: {['order_id']}")
+        # check order
+        order = Order.objects.filter(id=data['order_id'])
+        if not order:
+            return Response({'status':'failed', 'error':'invalid order_id'})
+        order[0].active = False
+        order[0].save()
+        return Response({'status':'suceess'})
+
+
+class top_markets_info(APIView):
+    def get(self, req):
+        tops = ['BTC', 'ETH', 'ADA', 'BNB']
+        data = []
+        for cur in tops:
+            currency = Currency.objects.get(symbol=cur)
+            data.append({
+                'name': f'{cur}/USDT',
+                'price': currency.price,
+                'daily_change': "%.2f" % currency.daily_price_change_pct
+            })
+        return Response(data)
