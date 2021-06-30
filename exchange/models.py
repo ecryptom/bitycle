@@ -121,7 +121,10 @@ class Order(models.Model):
 
     def average_traded_price(self):
         transactions = self.sales_transactions.all() if self.Type=='sell' else self.buy_transactions.all()
-        return sum([tran.price*tran.amount for tran in transactions]) / sum([tran.amount for tran in transactions])
+        if transactions:
+            return sum([tran.price*tran.amount for tran in transactions]) / sum([tran.amount for tran in transactions])
+        else:
+            return 0
     
 
 class Transaction(models.Model):
