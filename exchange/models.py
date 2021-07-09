@@ -22,6 +22,8 @@ class Market(models.Model):
     name = models.CharField(max_length=15)
     base_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='market_as_base')
     quote_currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='market_as_quote')
+    def __str__(self):
+        return self.name
 
     def get_info(self):
         last_1min_candle = One_min_candle.objects.filter(market=self).last()

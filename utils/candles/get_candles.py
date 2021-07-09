@@ -18,7 +18,7 @@ redis_db.set('candle_updater_time', time.time())
 sql = 'insert into exchange_one_min_candle (market_id, open_time, open_price, close_price, high_price, low_price, volume) values '
 
 def get_candle(market, lock):
-    global requests, sql, datetime, One_min_candle, time
+    global requests, sql, datetime, One_min_candle, time,execute_sql
     # calcute number of candles must be received
     try:
         now = int(datetime.now().timestamp())
