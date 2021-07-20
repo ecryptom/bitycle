@@ -1,9 +1,9 @@
 from strategies.models import Candle_pattern
 
-# candle1={"color":"green","length":{"above_shadow":[25,34],"body":[35,50],"bottom_shadow":[0,12]},"open":{"operation":">","attribute":"close_price"},"close":{"operation":"<","attribute":"open_price"},"high":{"operation":">","attribute":"low_price"},"low":None}
-# '[{"color": "green", "length": {"above_shadow": [25, 34], "body": [35, 50], "bottom_shadow": [0, 12]}, "open": {"operation": ">", "attribute": "close_price"}, "close": {"operation": "<", "attribute": "open_price"}, "high": {"operation": ">", "attribute": "low_price"}, "low": null}, {"color": "green", "length": {"above_shadow": [25, 34], "body": [35, 50], "bottom_shadow": [0, 12]}, "open": {"operation": ">", "attribute": "close_price"}, "close": {"operation": "<", "attribute": "open_price"}, "high": {"operation": ">", "attribute": "low_price"}, "low": null}]'
+# candle1={"color":"red","length":{"above_shadow":[0,5],"body":[90,100],"bottom_shadow":[0,5]},"open":{"operation":">","attribute":"close_price"},"close":{"operation":"<","attribute":"open_price"},"high":{"operation":">","attribute":"low_price"},"low":None}
+# candle1={"color":"red","length":{"above_shadow":[0,5],"body":[90,100],"bottom_shadow":[0,5]},"open":{"operation":">","attribute":"close_price"},"close":{"operation":"<","attribute":"open_price"},"high":{"operation":">","attribute":"low_price"},"low":None}
 
-# candle1={"color":"green","length":{"above_shadow":[0,100],"body":[0,100],"bottom_shadow":[0,100]},"open":None,"close":None,"high":None,"low":None}
+candle1={"color":"green","length":{"above_shadow":[0,5],"body":[90,100],"bottom_shadow":[0,5]},"open":None,"close":None,"high":None,"low":None}
 
 
 

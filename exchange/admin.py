@@ -17,3 +17,7 @@ class MarketAdmin(admin.ModelAdmin):
     ordering = ['name']
     search_fields = ('name',)
 
+@admin.register(Order)
+class MarketAdmin(admin.ModelAdmin):
+    list_display = ('user', 'market', 'total_amount', 'price', 'active', 'market')
+    search_fields = ('user',)

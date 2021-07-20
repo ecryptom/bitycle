@@ -25,8 +25,8 @@ class market_news(APIView):
         market = Market.objects.filter(name=data['market'])
         if not market:
             return Response({'status':'failed', 'error':'invalid market'})
-        news = list(market[0].base_currency.news_set.all())[:10]
-        news.extend(list(market[0].quote_currency.news_set.all())[:10])
+        news = list(market[0].base_currency.news_set.all().order_by('-id'))[:10]
+        news.extend(list(market[0].quote_currency.news_set.all().order_by('-id'))[:10])
         news = NewsSerializer(news, many=True)
         return Response(news.data)
 

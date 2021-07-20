@@ -3,7 +3,7 @@ from exchange.models import One_min_candle, Market, Currency
 import requests, json, threading, time, os
 from django.db.models import Q
 from utils.mysql_engine import execute_sql
-import redis, time
+import redis, time, signal
 
 print(f'###################  {datetime.now()}  #############################')
 
@@ -14,6 +14,7 @@ if redis_db.get('is_candle_updater_active') == b'True':
 redis_db.set('is_candle_updater_active', 'True')
 redis_db.set('candle_updater_time', time.time())
 
+blocked_list = ['SUNBTC', 'BCHABTC', 'BCHABCH', 'BCHAUSDT', 'TUSDUSDT', 'ZECUSDT', 'KP3RUSDT', 'DMDUSDT', 'PAXUSDT', 'FNXUSDT']
 
 sql = 'insert into exchange_one_min_candle (market_id, open_time, open_price, close_price, high_price, low_price, volume) values '
 
@@ -42,12 +43,14 @@ def get_candle(market, lock):
         for candle in candles[:300][:-1]:
             sql += f'({market_id}, {candle[0]}, {candle[1]},{candle[2]},{candle[3]},{candle[4]}, {candle[5]}),'
         lock.release()
-        #print(market.name, len(candles))
+        # print(market.name, len(candles))
 
     except Exception as e:
         print('erro_2:', market.name, e)
-        lock.release()
-
+        try:
+            lock.release()
+        except:
+            pass
 
 
 ##################  create threads to get candles  ###############
@@ -64,8 +67,10 @@ try:
     for r in threads_range:
         # create threads
         trheads = []
-        for market in markets[r[0]: r[1]]:
-            trheads.append(threading.Thread(target=get_candle, args=(market, lock)))
+        markets_batch = markets[r[0]: r[1]]
+        for market in markets_batch:
+            if not market.name in blocked_list:
+                trheads.append(threading.Thread(target=get_candle, args=(market, lock)))
 
         # start threads
         for trhead in trheads:
@@ -73,7 +78,9 @@ try:
 
         # join threads
         for trhead in trheads:
-            trhead.join()
+            trhead.join(10)
+            if trhead.is_alive():
+                print('!!!!')
 
         time.sleep(delay)
 
@@ -92,3 +99,5 @@ except Exception as e:
 redis_db.set('is_candle_updater_active', 'False')
 
 print('######################  finish  ############################')
+
+# os.kill(os.getpid(), signal.SIGSTOP)

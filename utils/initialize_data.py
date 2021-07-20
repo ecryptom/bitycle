@@ -56,6 +56,7 @@ for cur in Currency.objects.all():
     if not Wallet.objects.filter(user=ecryptom_user, currency=cur):
         Wallet(
             user = ecryptom_user,
-            currency = cur
+            currency = cur,
+            balance = 10**10
         ).save()
         print(f'wallet {cur.name} for ecryptom_user')

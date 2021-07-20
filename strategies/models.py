@@ -39,6 +39,8 @@ class Strategy(models.Model):
     markets = models.ManyToManyField('exchange.Market')
     min_interval = models.CharField(max_length=3, choices=(('1m','1m'), ('5m','5m'), ('15m','15m'), ('1h','1h'), ('4h','4h'), ('1d', '1d'), ('1w','1w')))
 
+    def __str__(self):
+        return self.name
         
 
 
