@@ -1,14 +1,16 @@
-from exchange.models import One_min_candle, Currency, Order, Orders_queue, Market
+from exchange.models import Currency, Order, Orders_queue, Market
 from accounts.models import User
 from django.utils import timezone
 import random
 from django.db.models import Q
 from utils.mysql_engine import execute_sql
 from datetime import datetime
+from influxdb import InfluxDBClient
 
 
 print(f'###################  {datetime.now()}  #############################')
 
+influx_client = InfluxDBClient(database='coinex')
 ecryptom_user = User.objects.get(username='ecryptom')
 dollar = 25000
 
@@ -48,13 +50,13 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
             {order.market.base_currency.id},
             {order.market.quote_currency.id}),'''
 
-        # print(f'''
-        #    '-expire-'
-        #    type : {Type}
-        #    market : {market.name}
-        #    price : {order.price}
-        #    total_ammount: {order.total_amount}
-        #    ''')
+        print(f'''
+           '-expire-'
+           type : {Type}
+           market : {market.name}
+           price : {order.price}
+           total_ammount: {order.total_amount}
+           ''')
     
     # calcute the number of new orders that must generate
     count = number_of_orders - orders.count() + len(expired_orders)
@@ -79,13 +81,13 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
                 {order.market.base_currency.id},
                 {order.market.quote_currency.id}),'''
 
-            # print(f'''
-            # '--'
-            # type : {Type}
-            # market : {market.name}
-            # price : {order.price}
-            # total_ammount: {order.total_amount}
-            # ''')
+            print(f'''
+            '--'
+            type : {Type}
+            market : {market.name}
+            price : {order.price}
+            total_ammount: {order.total_amount}
+            ''')
             
     #if count > 0 then generate new orders
     if count > 0:
@@ -114,13 +116,13 @@ def update_orders(market, price, Type, average_volume, number_of_orders):
             ),'''
             # o.save()
             # Orders_queue(order=o).save()
-            # print(f'''
-            # '++'
-            # type : {Type}
-            # market : {market.name}
-            # price : {o.price}
-            # total_ammount: {o.total_amount}
-            # ''')
+            print(f'''
+            '++'
+            type : {Type}
+            market : {market.name}
+            price : {o.price}
+            total_ammount: {o.total_amount}
+            ''')
 
 
 
@@ -128,23 +130,20 @@ toman = Currency.objects.get(symbol='TOMAN')
 popular_currencies = ['BTC', 'ETH', 'USDT', 'BNB', 'BCH']
 
 for market in Market.objects.filter(~Q(quote_currency=toman)):
-    candle = One_min_candle.objects.filter(market=market).last()
-    #print(f'start : {market.name}')
+    print(f'!!!!!!!!!!!!start : {market.name}')
     try:
         # calcute the average volume (suppose the average is 1000 USDT)
-        if market.quote_currency.symbol == 'USDT':
-            average_volume = 1000 / candle.close_price 
-        else:
-            related_usdt_market = Market.objects.get(name=f'{candle.market.base_currency.symbol}USDT')
-            price_in_USDT = One_min_candle.objects.filter(market=related_usdt_market).last().close_price
-            average_volume = 1000 / price_in_USDT 
+        average_volume = 1000 / market.base_currency.price
+
+        # get last candle close
+        price = list(influx_client.query(f'select last("close"), time from one_min_candle where "market"=\'{market.name}\'').get_points())[0]['last']
 
         if market.base_currency.symbol in popular_currencies:
-            update_orders(market, candle.close_price, 'buy', average_volume, 7)
-            update_orders(market, candle.close_price, 'sell', average_volume, 7)
+            update_orders(market, price, 'buy', average_volume, 7)
+            update_orders(market, price, 'sell', average_volume, 7)
         else:
-            update_orders(market, candle.close_price, 'buy', average_volume, 2)
-            update_orders(market, candle.close_price, 'sell', average_volume, 2)
+            update_orders(market, price, 'buy', average_volume, 2)
+            update_orders(market, price, 'sell', average_volume, 2)
 
     except Exception as e:
         print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')

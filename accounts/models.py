@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from utils import order_processor
+from utils.orders import order_processor
 from exchange.models import *
 
 class User(AbstractUser): 

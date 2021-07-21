@@ -2,6 +2,7 @@ import json
 from exchange.models import Currency, Market, Wallet
 from accounts.models import User
 from utils.constant_variables import markets, currencies
+from influxdb import InfluxDBClient
 
 ############ initialize currencies  #####################
 for cur in currencies:
@@ -60,3 +61,9 @@ for cur in Currency.objects.all():
             balance = 10**10
         ).save()
         print(f'wallet {cur.name} for ecryptom_user')
+
+
+################ initialize influx_db  #################
+client = InfluxDBClient()
+if {'name': 'coinex'} not in client.get_list_database():
+    client.create_database('coinex')

@@ -1,56 +1,68 @@
+from influxdb import InfluxDBClient
 from datetime import datetime
-from exchange.models import One_min_candle, Market, Currency
-import requests, json, threading, time, os
+from exchange.models import Market, Currency
+import requests, threading, time, os
 from django.db.models import Q
-from utils.mysql_engine import execute_sql
-import redis, time, signal
+from django.utils import timezone
+import redis, time, pytz
 
 print(f'###################  {datetime.now()}  #############################')
 
 # check if another instance of this program is working
 redis_db = redis.Redis()
+influx_client = InfluxDBClient()
+influx_client.switch_database('coinex')
+
 if redis_db.get('is_candle_updater_active') == b'True':
     exit()
 redis_db.set('is_candle_updater_active', 'True')
 redis_db.set('candle_updater_time', time.time())
 
-blocked_list = ['SUNBTC', 'BCHABTC', 'BCHABCH', 'BCHAUSDT', 'TUSDUSDT', 'ZECUSDT', 'KP3RUSDT', 'DMDUSDT', 'PAXUSDT', 'FNXUSDT']
-
-sql = 'insert into exchange_one_min_candle (market_id, open_time, open_price, close_price, high_price, low_price, volume) values '
+points = []
 
 def get_candle(market, lock):
-    global requests, sql, datetime, One_min_candle, time,execute_sql
+    global requests, datetime, time, points, influx_client, timezone, pytz
     # calcute number of candles must be received
     try:
         now = int(datetime.now().timestamp())
-        last_time = One_min_candle.objects.filter(market=market).order_by('open_time').last().open_time
+        last_time = list(influx_client.query(f'select last("open"), time from one_min_candle where "market"=\'{market.name}\'').get_points())[0]['time']
+        last_time = int(timezone.datetime.strptime(last_time, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.timezone('UTC')).timestamp())
         number_of_candles = (now - last_time) // 60
     except Exception as e:
         print('erro_1:', e)
-        number_of_candles = 10
-        if 'Too many connections' in str(e):
-            execute_sql('SET GLOBAL max_connections = 1000;')
+        return
 
     # get candles and insert as a sql command
     try:
         candles = requests.get(f'https://api.coinex.com/v1/market/kline?market={market.name}&limit={number_of_candles}&type=1min').json()
         candles = candles['data']
-        market_id = market.id
+        market_name = market.name
         time.sleep(0.1)
     
         lock.acquire()
 
         for candle in candles[:300][:-1]:
-            sql += f'({market_id}, {candle[0]}, {candle[1]},{candle[2]},{candle[3]},{candle[4]}, {candle[5]}),'
+            points.append({
+                "measurement": "one_min_candle",
+                "tags": {
+                    "market": market_name,
+                },
+                "time": int(candle[0]) * 1000000000,
+                "fields": {
+                    "open": float(candle[1]),
+                    "close": float(candle[2]),
+                    "high": float(candle[3]),
+                    "low": float(candle[4]),
+                    "volume":float(candle[5])
+                }
+            })
         lock.release()
         # print(market.name, len(candles))
 
     except Exception as e:
         print('erro_2:', market.name, e)
-        try:
-            lock.release()
-        except:
-            pass
+        lock.release()
+
 
 
 ##################  create threads to get candles  ###############
@@ -67,10 +79,8 @@ try:
     for r in threads_range:
         # create threads
         trheads = []
-        markets_batch = markets[r[0]: r[1]]
-        for market in markets_batch:
-            if not market.name in blocked_list:
-                trheads.append(threading.Thread(target=get_candle, args=(market, lock)))
+        for market in markets[r[0]: r[1]]:
+            trheads.append(threading.Thread(target=get_candle, args=(market, lock)))
 
         # start threads
         for trhead in trheads:
@@ -79,8 +89,6 @@ try:
         # join threads
         for trhead in trheads:
             trhead.join(10)
-            if trhead.is_alive():
-                print('!!!!')
 
         time.sleep(delay)
 
@@ -90,8 +98,7 @@ except Exception as e:
 
 ##################  save in db  ###############
 try:
-    sql = sql[:-1] + ';'
-    execute_sql(sql)
+    influx_client.write_points(points)
 except Exception as e:
     print('erro_4:', e)
 
@@ -99,5 +106,3 @@ except Exception as e:
 redis_db.set('is_candle_updater_active', 'False')
 
 print('######################  finish  ############################')
-
-# os.kill(os.getpid(), signal.SIGSTOP)
